@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>አራዳ ዘመናዊ ቢንጎ</title>
+    <style>
+        body {
+            background-color: #0b1322;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        /* 1. መግቢያ ገጽ */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #070c16;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background-color: #121b2d;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #1e2d4a;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .login-box h2 { color: #22d3ee; margin-top: 0; font-size: 24px; }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 5px; }
+        .input-group input, .input-group select {
+            width: 100%; padding: 10px; border-radius: 8px;
+            border: 1px solid #2b3e65; background-color: #1a263f;
+            color: white; box-sizing: border-box; outline: none;
+        }
+        .login-btn {
+            width: 100%; padding: 12px; background-color: #06b6d4;
+            border: none; border-radius: 8px; color: #070c16;
+            font-weight: bold; cursor: pointer; font-size: 16px;
+        }
+        
+        /* 2. ዋናው ማጫወቻ ገጽ ሌይአውት */
+        #main-dashboard { display: none; max-width: 1200px; margin: 0 auto; }
+        
+        .status-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .status-box {
+            background-color: #121b2d;
+            border: 1px solid #1e2d4a;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        .status-box p { margin: 0; font-size: 11px; color: #22d3ee; font-weight: bold; }
+        .status-box span, .status-box input {
+            display: block; margin-top: 5px; font-size: 16px; font-weight: 900; color: white;
+            background: transparent; border: none; text-align: center; width: 100%; outline: none;
+        }
+        .status-box.derash-style { background-color: rgba(22, 163, 74, 0.1); border-color: #16a34a; }
+        .status-box.derash-style span { color: #4ade80; }
+
+        .control-bar {
+            background-color: #121b2d;
+            border: 1px solid #1e2d4a;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-draw { background-color: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-draw:disabled { background-color: #1f2937; color: #4b5563; cursor: not-allowed; border: 1px solid #374151; }
+        .btn-reset { background-color: #4b5563; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* ዋናው ግሪድ መዋቅር */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+
+        /* ፓነል */
+        .panel { background-color: #121b2d; border: 1px solid #1e2d4a; padding: 15px; border-radius: 12px; height: fit-content; }
+        .panel-title { font-size: 14px; color: #22d3ee; margin-top: 0; margin-bottom: 10px; font-weight: bold; }
+        
+        /* የካርቴላ መመዝገቢያ ቦርድ */
+        .cartela-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            max-height: 450px;
+            overflow-y: auto;
+            background-color: #0b1322;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .cartela-btn {
+            background-color: #1a263f; color: #d1d5db; border: 1px solid #233354;
+            padding: 8px 0; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center;
+        }
+        .cartela-btn.selected { background-color: #ef4444 !important; color: white !important; box-shadow: 0 0 8px #ef4444; }
+
+        /* Called Board */
+        .called-board-container { background-color: #0b1322; padding: 10px; border-radius: 8px; }
+        .bingo-header-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; margin-bottom: 5px; }
+        .b-letter { background-color: #f59e0b; padding: 5px; border-radius: 4px; font-weight: 900; font-size: 14px; color: #000; }
+        .i-letter { background-color: #f59e0b; padding: 5px; border-radius: 4px; font-weight: 900; font-size: 14px; color: #000; }
+        .n-letter { background-color: #ef4444; padding: 5px; border-radius: 4px; font-weight: 900; font-size: 14px; color: #fff; }
+        .g-letter { background-color: #2563eb; padding: 5px; border-radius: 4px; font-weight: 900; font-size: 14px; color: #fff; }
+        .o-letter { background-color: #22c55e; padding: 5px; border-radius: 4px; font-weight: 900; font-size: 14px; color: #fff; }
+        
+        .bingo-numbers-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+        .bingo-column { display: flex; flex-direction: column; gap: 3px; }
+        .num-slot { background-color: #1a263f; color: #4b5563; padding: 6px 0; text-align: center; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .num-slot.called { background-color: #eab308 !important; color: #111827 !important; font-weight: 900; box-shadow: 0 0 8px #eab308; }
+
+        /* የቀኝ ክፍል ስታይል */
+        .right-col { display: flex; flex-direction: column; gap: 15px; }
+
+        /* የትልቅ ቁጥር ማሳያ */
+        .big-ball-box { background-color: #0b1322; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #1a263f; }
+        #current-ball { font-size: 55px; font-weight: 900; color: #eab308; display: block; line-height: 1; margin-top: 5px; }
+
+        /* Validator Result */
+        .photo-card-preview { background-color: white; padding: 15px; border-radius: 15px; color: #1e293b; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; background-color: #f1f5f9; padding: 8px; border-radius: 10px; }
+        .green-badge { background-color: #16a34a; color: white; aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; border-radius: 10px; font-weight: bold; font-size: 16px; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2); }
+        .green-badge.hit { background-color: #f59e0b !important; color: black !important; font-weight: 900; }
+
+        .verify-box { display: flex; gap: 8px; margin-bottom: 10px; }
+        .verify-box input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #2b3e65; background-color: #1a263f; color: white; outline: none; }
+        .verify-box button { background-color: #a855f7; border: none; padding: 8px 15px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; }
+        
+        .flex-selects { display: flex; gap: 10px; align-items: center; }
+        .flex-selects select { background-color: #1a263f; color: white; border: 1px solid #2b3e65; padding: 8px; border-radius: 6px; outline: none; }
+
+        /* 💎 አዲስ የመጣ የፖፕ-አፕ (Modal) ስታይል */
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(7, 12, 22, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10000; opacity: 0; pointer-events: none;
+            transition: all 0.4s ease;
+        }
+        .popup-overlay.show { opacity: 1; pointer-events: auto; }
+        .popup-box {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            border: 3px solid #4ade80;
+            border-radius: 20px; padding: 30px; width: 420px;
+            text-align: center; box-shadow: 0 0 30px rgba(74, 222, 128, 0.4);
+            transform: scale(0.7); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .popup-overlay.show .popup-box { transform: scale(1); }
+        .popup-box h1 { color: #4ade80; margin-top: 0; font-size: 36px; text-transform: uppercase; letter-spacing: 2px; }
+        .winning-card-tag { font-size: 28px; font-weight: 900; color: #ffffff; background-color: #1e293b; padding: 10px; border-radius: 10px; border: 1px solid #334155; margin: 15px 0; }
+        .winning-ball-tag { font-size: 22px; font-weight: bold; color: #f59e0b; margin: 10px 0; }
+        .popup-close-btn { background-color: #ef4444; color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 15px; }
+        .popup-close-btn:hover { background-color: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. መግቢያ ገጽ -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>BINGO LOGIN</h2>
+            <div class="input-group">
+                <label>መለያ ስም (Username)</label>
+                <input type="text" id="username" value="adam">
+            </div>
+            <div class="input-group">
+                <label>የይለፍ ቃል (Password)</label>
+                <input type="password" id="password" placeholder="******">
+            </div>
+            <button onclick="login()" class="login-btn">ግባ</button>
+            <p id="login-error" style="color: #f87171; font-size: 12px; margin-top: 10px; display: none;"> ❌  የተሳሳተ ስም ወይም ፓስወርድ!</p>
+        </div>
+    </div>
+
+    <!-- 🌟 አዲስ የጥሪ ማብቂያ/አሸናፊ ፖፕ-አፕ (Pop-up Modal) -->
+    <div id="winner-popup" class="popup-overlay">
+        <div class="popup-box">
+            <h1>🎉 BINGO! 🎉</h1>
+            <p style="color: #9ca3af; margin: 5px 0;">ጨዋታው በስኬት ተዘግቷል</p>
+            <div class="winning-card-tag" id="pop-card-number">CARD #--</div>
+            <div class="winning-ball-tag" id="pop-winning-ball">የዘጋበት ቁጥር፦ <span style="font-size:32px; font-weight:900;">--</span></div>
+            <p id="pop-derash-prize" style="color: #4ade80; font-size: 18px; font-weight: bold; margin: 10px 0;"></p>
+            <button onclick="closePopup()" class="popup-close-btn">እሺ ዝጋ</button>
+        </div>
+    </div>
+
+    <!-- 2. ዋናው ማጫወቻ ገጽ -->
+    <div id="main-dashboard">
+        
+        <!-- የፋይናንስ መረጃዎች -->
+        <div class="status-container" id="finance-status-bar">
+            <div class="status-box">
+                <p>MEDEB</p>
+                <input type="number" id="medeb-amount" value="10" oninput="updateFinance()">
+            </div>
+            <div class="status-box">
+                <p>PLAYERS</p>
+                <span id="player-count">0</span>
+            </div>
+            <!-- TOTAL BALANCE ቦክስ -->
+            <div class="status-box" id="balance-box">
+                <p>TOTAL BALANCE</p>
+                <span id="total-balance">0 Br</span>
+            </div>
+            <!-- DERASH ቦክስ -->
+            <div class="status-box derash-style" id="derash-box" style="display: none;">
+                <p>DERASH </p>
+                <span id="derash-amount">0 Br</span>
+            </div>
+        </div>
+
+        <!-- የጨዋታ መቆጣጠሪያ ባር -->
+        <div class="control-bar">
+            <div>
+                <span style="font-size: 12px; color: #9ca3af;">ሁኔታ፦</span>
+                <span id="game-status-text" style="font-weight: bold; color: #f59e0b;">🎮 ዝግጁ (Ready)</span>
+            </div>
+            
+            <div class="flex-selects">
+                <!-- የጨዋታ አይነት መምረጫ -->
+                <div>
+                    <label style="font-size: 11px; color: #9ca3af; display:block;">የጨዋታ አይነት</label>
+                    <select id="game-pattern-select">
+                        <option value="full">ሙሉ ዝግ (Full House)</option>
+                        <option value="horizontal">1አግድም መስመር (Horizontal)</option>
+                        <option value="vertical"> 1ቋሚ መስመር (Vertical)</option>
+                        <option value="diagonal">2 ዲያጎናል (Diagonals)</option>
+                        <option value="line3">3 መስመር (3 Lines)</option>
+                        <option value="line4">4 መስመር (4 Lines)</option>
+                        <option value="line6">5 መስመር (5 Lines)</option>
+                        <option value="line6">6 መስመር (6 Lines)</option>
+                        <option value="line6">7 መስመር (7 Lines)</option>
+                        <option value="line8">8 መስመር (8 Lines)</option>
+                        <option value="vertical2_diagonal1">2 ቋሚ + 1 ዲያጎናል</option>
+                    </select>
+                </div>
+
+                <!-- የሰዓት ልዩነት መምረጫ -->
+                <div>
+                    <label style="font-size: 11px; color: #9ca3af; display:block;">የጊዜ ልዩነት (ሰከንድ)</label>
+                    <select id="caller-interval">
+                        <option value="2">2 ሰከንድ</option>
+                        <option value="5" selected>5 ሰከንድ</option>
+                        <option value="10" >10 ሰከንድ</option>
+                        <option value="15">15 ሰከንድ</option>
+                        <option value="20">20 ሰከንድ</option>
+                        <option value="25">25 ሰከንድ</option>
+                        <option value="30">30 ሰከንድ</option>
+                        <option value="40">40 ሰከንድ</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button onclick="toggleAutoPlay()" id="btn-auto" style="background-color: #3b82f6; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 5px;">በራሱ አጫውት ⏱️</button>
+                <button onclick="drawNumber()" id="btn-draw-el" class="btn-draw">እጣ አውጣ 🎲</button>
+                <button onclick="resetGame()" class="btn-reset">አዲስ ጀምር</button>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- የግራው ፓነል -->
+            <div class="panel" id="left-main-panel">
+                <div id="registration-view">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <p class="panel-title" style="margin:0;">🎟️ የካርቴላ መመዝገቢያ ቦርድ (1 - 400)</p>
+                        <span style="font-size: 11px; color:#9ca3af;">የተመዘገቡ፡ <b id="reg-count" style="color:white;">0</b></span>
+                    </div>
+                    <div class="cartela-grid" id="cartela-container"></div>
+                </div>
+                
+                <!-- ወደ ግራ የሚመጣው Called Board -->
+                <div id="called-board-view" style="display: none;">
+                    <p class="panel-title" style="color: #f59e0b; margin-bottom: 10px;">🔢 CALLED BOARD (<span id="called-counter">0/75</span>)</p>
+                    <div class="called-board-container">
+                        <div class="bingo-header-row">
+                            <div class="b-letter">B</div>
+                            <div class="i-letter">I</div>
+                            <div class="n-letter">N</div>
+                            <div class="g-letter">G</div>
+                            <div class="o-letter">O</div>
+                        </div>
+                        <div class="bingo-numbers-grid" id="bingo-75-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- የቀኝ ፓነል -->
+            <div class="right-col">
+                <div class="panel">
+                    <div class="big-ball-box">
+                        <span style="font-size: 12px; color: #6b7280; font-weight: bold; display: block;">አሁን የወጣው ቁጥር</span>
+                        <span id="current-ball">-</span>
+                    </div>
+                </div>
+
+                <div class="panel" style="background: linear-gradient(to bottom, #121b2d, #16122d);">
+                    <p class="panel-title" style="color: #c084fc;">🔍 አሸናፊ ማረጋገጫ (Good Bingo)</p>
+                    <div class="verify-box">
+                        <input type="number" id="check-card-num" placeholder="ካርቴላ ቁጥር...">
+                        <button onclick="verifyBingo()">ቼክ</button>
+                    </div>
+                    <div id="validation-result" style="text-align:center; font-size:13px; font-weight:bold; padding:10px; border-radius:6px; margin-bottom:10px; display:none;"></div>
+
+                    <div id="photo-card-preview" class="photo-card-preview" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; color: #1e3a8a; margin-bottom: 5px;">
+                            <span id="preview-card-title">CARD #--</span>
+                            <span style="color: #16a34a; font-size: 12px;">አራዳ ቢንጎ</span>
+                        </div>
+                        <div class="bingo-header-row" style="color: white; margin-bottom: 2px;">
+                            <div class="b-letter" style="border-radius:4px;">B</div>
+                            <div class="i-letter" style="border-radius:4px;">I</div>
+                            <div class="n-letter" style="border-radius:4px;">N</div>
+                            <div class="g-letter" style="border-radius:4px;">G</div>
+                            <div class="o-letter" style="border-radius:4px;">O</div>
+                        </div>
+                        <div class="photo-grid" id="photo-card-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const AUTH = { username: "adam", password: "145236" };
+        const BINGO_CARDS = {};
+        let registeredCards = new Set();
+        let drawnNumbers = [];
+        let gameStarted = false;
+        let isGameLocked = false;
+        let autoPlayerInterval = null;
+        let isAutoPlaying = false;
+
+        // የ 1-400 ካርቴላዎች ማውጫ መፍጠሪያ (5x5 ማትሪክስ)
+        for (let i = 1; i <=400; i++) {
+            let card = [];
+            let colRanges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
+            let columns = [];
+            for(let c=0; c<5; c++) {
+                let colNums = [];
+                while(colNums.length < 5) {
+                    let r = Math.floor(Math.random() * (colRanges[c][1] - colRanges[c][0] + 1)) + colRanges[c][0];
+                    if(!colNums.includes(r)) colNums.push(r);
+                }
+                colNums.sort((a,b) => a-b);
+                columns.push(colNums);
+            }
+            for(let row=0; row<5; row++) {
+                for(let col=0; col<5; col++) {
+                    if(row === 2 && col === 2) card.push("★");
+                    else card.push(columns[col][row]);
+                }
+            }
+            BINGO_CARDS[i] = card;
+        }
+
+        function playAmharicVoice(letter, number) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const speechText = `${letter} ... ${number}`;
+                const speech = new SpeechSynthesisUtterance(speechText);
+                speech.lang = 'am-ET';
+                speech.rate = 0.8;
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        function playTextToSpeech(text) {
+            if ('speechSynthesis' in window) {
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.lang = 'en-US';
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            if(user === AUTH.username && pass === AUTH.password) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-dashboard').style.display = 'block';
+                setupApp();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        function setupApp() {
+            buildCartelaBoard();
+            build75Board();
+            updateFinance();
+            gameStarted = false;
+            isGameLocked = false;
+            document.getElementById('btn-draw-el').disabled = false;
+            document.getElementById('registration-view').style.display = 'block';
+            document.getElementById('called-board-view').style.display = 'none';
+            
+            document.getElementById('balance-box').style.display = 'block';
+            document.getElementById('derash-box').style.display = 'none';
+        }
+
+        function buildCartelaBoard() {
+            const container = document.getElementById('cartela-container');
+            container.innerHTML = "";
+            for (let i = 1; i <= 400; i++) {
+                const btn = document.createElement('div');
+                btn.innerText = i;
+                btn.id = `cartela-${i}`;
+                btn.className = "cartela-btn";
+                btn.onclick = () => { if(!gameStarted) toggleCartela(i); };
+                container.appendChild(btn);
+            }
+        }
+
+        function build75Board() {
+            const grid = document.getElementById('bingo-75-grid');
+            grid.innerHTML = "";
+            let colRanges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
+            
+            for(let c=0; c<5; c++) {
+                const colDiv = document.createElement('div');
+                colDiv.className = "bingo-column";
+                for(let i = colRanges[c][0]; i <= colRanges[c][1]; i++) {
+                    const slot = document.createElement('div');
+                    slot.innerText = i;
+                    slot.id = `called-${i}`;
+                    slot.className = "num-slot";
+                    colDiv.appendChild(slot);
+                }
+                grid.appendChild(colDiv);
+            }
+        }
+
+        function toggleCartela(num) {
+            const btn = document.getElementById(`cartela-${num}`);
+            if (registeredCards.has(num)) {
+                registeredCards.delete(num);
+                btn.classList.remove('selected');
+            } else {
+                registeredCards.add(num);
+                btn.classList.add('selected');
+            }
+            updateFinance();
+        }
+
+        function updateFinance() {
+            const medeb = parseFloat(document.getElementById('medeb-amount').value) || 0;
+            const players = registeredCards.size;
+            const totalBalance = medeb * players;
+            const derash = totalBalance * 0.70;
+
+            document.getElementById('player-count').innerText = players;
+            document.getElementById('total-balance').innerText = totalBalance + " Br";
+            document.getElementById('derash-amount').innerText = derash.toFixed(1) + " Br";
+            document.getElementById('reg-count').innerText = players;
+        }
+
+        getLetterForNumber = (num) => {
+            if (num >= 1 && num <= 15) return 'B';
+            if (num >= 16 && num <= 30) return 'I';
+            if (num >= 31 && num <= 45) return 'N';
+            if (num >= 46 && num <= 60) return 'G';
+            if (num >= 61 && num <= 75) return 'O';
+            return '';
+        };
+
+        function drawNumber() {
+            if(isGameLocked) return;
+
+            if(registeredCards.size === 0) {
+                alert("🎰 እባክዎ መጀመሪያ የካርቴላ ቁጥሮችን መርጠው ይመዝግቡ!");
+                stopAutoPlay();
+                return;
+            }
+            
+            if(!gameStarted) {
+                gameStarted = true;
+                document.getElementById('registration-view').style.display = 'none';
+                document.getElementById('called-board-view').style.display = 'block';
+                document.getElementById('game-pattern-select').disabled = true;
+                
+                document.getElementById('balance-box').style.display = 'none';
+                document.getElementById('derash-box').style.display = 'block';
+            }
+
+            if (drawnNumbers.length >= 75) { 
+                alert("ሁሉም ቁጥሮች ወጥተዋል!"); 
+                stopAutoPlay();
+                return; 
+            }
+
+            let randomNum;
+            do { randomNum = Math.floor(Math.random() * 75) + 1; } while (drawnNumbers.includes(randomNum));
+            drawnNumbers.push(randomNum);
+
+            let letter = getLetterForNumber(randomNum);
+            document.getElementById('current-ball').innerText = `${letter}-${randomNum}`;
+            
+            const element = document.getElementById(`called-${randomNum}`);
+            if(element) element.classList.add('called');
+            
+            document.getElementById('called-counter').innerText = `${drawnNumbers.length}/75`;
+            document.getElementById('game-status-text').innerText = `🎲 ቁጥር ${letter} ${randomNum} ወጥቷል...`;
+
+            playAmharicVoice(letter, randomNum);
+
+            const checkedCard = parseInt(document.getElementById('check-card-num').value);
+            if(checkedCard) renderCardPreview(checkedCard);
+        }
+
+        function toggleAutoPlay() {
+            if (isAutoPlaying) {
+                stopAutoPlay();
+            } else {
+                if(isGameLocked) return;
+                const seconds = parseInt(document.getElementById('caller-interval').value) * 1000;
+                isAutoPlaying = true;
+                document.getElementById('btn-auto').innerText = "አቁም ⏹️";
+                document.getElementById('btn-auto').style.backgroundColor = "#ef4444";
+                drawNumber(); 
+                autoPlayerInterval = setInterval(drawNumber, seconds);
+            }
+        }
+
+        function stopAutoPlay() {
+            isAutoPlaying = false;
+            clearInterval(autoPlayerInterval);
+            document.getElementById('btn-auto').innerText = "በራሱ አጫውት ⏱️";
+            document.getElementById('btn-auto').style.backgroundColor = "#3b82f6";
+        }
+
+        function renderCardPreview(cardNum) {
+            const previewSection = document.getElementById('photo-card-preview');
+            const gridContainer = document.getElementById('photo-card-grid');
+            document.getElementById('preview-card-title').innerText = `CARD #${cardNum}`;
+            gridContainer.innerHTML = "";
+            
+            const cardNumbers = BINGO_CARDS[cardNum];
+            cardNumbers.forEach(num => {
+                const badge = document.createElement('div');
+                badge.className = "green-badge";
+                badge.innerText = num;
+                if (drawnNumbers.includes(num) || num === "★") {
+                    badge.classList.add('hit');
+                }
+                gridContainer.appendChild(badge);
+            });
+            previewSection.style.display = 'block';
+        }
+
+        function checkPatternMatch(cardArr, pattern) {
+            const idx = (r, c) => r * 5 + c;
+            const isHit = (num) => num === "★" || drawnNumbers.includes(num);
+
+            if (pattern === "full") {
+                return cardArr.every(num => isHit(num));
+            }
+            
+            if (pattern === "horizontal") {
+                for(let r=0; r<5; r++) {
+                    let rowFill = true;
+                    for(let c=0; c<5; c++) if(!isHit(cardArr[idx(r,c)])) rowFill = false;
+                    if(rowFill) return true;
+                }
+                return false;
+            }
+
+            if (pattern === "vertical") {
+                for(let c=0; c<5; c++) {
+                    let colFill = true;
+                    for(let r=0; r<5; r++) if(!isHit(cardArr[idx(r,c)])) colFill = false;
+                    if(colFill) return true;
+                }
+                return false;
+            }
+
+            if (pattern === "diagonal") {
+                let diag1 = true, diag2 = true;
+                for(let i=0; i<5; i++) {
+                    if(!isHit(cardArr[idx(i,i)])) diag1 = false;
+                    if(!isHit(cardArr[idx(i,4-i)])) diag2 = false;
+                }
+                return diag1 && diag2;
+            }
+
+            if (pattern === "line3") {
+                let lines = 0;
+                for(let r=0; r<5; r++) {
+                    let rowFill = true;
+                    for(let c=0; c<5; c++) if(!isHit(cardArr[idx(r,c)])) rowFill = false;
+                    if(rowFill) lines++;
+                }
+                for(let c=0; c<5; c++) {
+                    let colFill = true;
+                    for(let r=0; r<5; r++) if(!isHit(cardArr[idx(r,c)])) colFill = false;
+                    if(colFill) lines++;
+                }
+                return lines >= 3;
+            }
+
+            if (pattern === "line6") {
+                let lines = 0;
+                for(let r=0; r<5; r++) {
+                    let rowFill = true;
+                    for(let c=0; c<5; c++) if(!isHit(cardArr[idx(r,c)])) rowFill = false;
+                    if(rowFill) lines++;
+                }
+                for(let c=0; c<5; c++) {
+                    let colFill = true;
+                    for(let r=0; r<5; r++) if(!isHit(cardArr[idx(r,c)])) colFill = false;
+                    if(colFill) lines++;
+                }
+                return lines >= 6;
+            }
+
+            if (pattern === "line8") {
+                let lines = 0;
+                for(let r=0; r<5; r++) {
+                    let rowFill = true;
+                    for(let c=0; c<5; c++) if(!isHit(cardArr[idx(r,c)])) rowFill = false;
+                    if(rowFill) lines++;
+                }
+                for(let c=0; c<5; c++) {
+                    let colFill = true;
+                    for(let r=0; r<5; r++) if(!isHit(cardArr[idx(r,c)])) colFill = false;
+                    if(colFill) lines++;
+                }
+                return lines >= 8;
+            }
+
+            if (pattern === "vertical2_diagonal1") {
+                let cols = 0;
+                for(let c=0; c<5; c++) {
+                    let colFill = true;
+                    for(let r=0; r<5; r++) if(!isHit(cardArr[idx(r,c)])) colFill = false;
+                    if(colFill) cols++;
+                }
+                let diag1 = true, diag2 = true;
+                for(let i=0; i<5; i++) {
+                    if(!isHit(cardArr[idx(i,i)])) diag1 = false;
+                    if(!isHit(cardArr[idx(i,4-i)])) diag2 = false;
+                }
+                let anyDiag = diag1 || diag2;
+                return cols >= 2 && anyDiag;
+            }
+
+            return false;
+        }
+
+        // 🎯 የዘጋበትን የመጨረሻ ቁጥር ለይቶ የሚያወጣ ተግባር
+        function findWinningBall(cardArr) {
+            // ከዕጣ የወጡትን ቁጥሮች በቅደም ተከተል ወደ ኋላ እንፈትሻለን
+            for (let i = drawnNumbers.length - 1; i >= 0; i--) {
+                let currentBall = drawnNumbers[i];
+                if (cardArr.includes(currentBall)) {
+                    let letter = getLetterForNumber(currentBall);
+                    return `${letter}-${currentBall}`;
+                }
+            }
+            return "N/A";
+        }
+
+        function verifyBingo() {
+            const cardNum = parseInt(document.getElementById('check-card-num').value);
+            const resultDiv = document.getElementById('validation-result');
+            const selectedPattern = document.getElementById('game-pattern-select').value;
+
+            if(!cardNum || cardNum < 1 || cardNum > 400) {
+                alert("ትክክለኛ ቁጥር ያስገቡ (1-400)!");
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            renderCardPreview(cardNum);
+
+            if (!registeredCards.has(cardNum)) {
+                resultDiv.innerText = `❌ ካርቴላ ቁጥር ${cardNum} አልተመዘገበም!`;
+                resultDiv.style.backgroundColor = '#451a03'; resultDiv.style.color = '#f59e0b';
+                return;
+            }
+
+            const isWinner = checkPatternMatch(BINGO_CARDS[cardNum], selectedPattern);
+            
+            if(isWinner) {
+                // የዘጋበትን የመጨረሻ ቁጥር ማግኘት
+                let finalWinningBall = findWinningBall(BINGO_CARDS[cardNum]);
+
+                resultDiv.innerText = `🎉 GOOD BINGO! ካርቴላ ቁጥር ${cardNum} በቁጥር (${finalWinningBall}) አሸንፏል!`;
+                resultDiv.style.backgroundColor = '#064e3b'; resultDiv.style.color = '#4ade80';
+                
+                isGameLocked = true;
+                stopAutoPlay();
+                document.getElementById('btn-draw-el').disabled = true;
+                document.getElementById('game-status-text').innerText = `🔒 ጨዋታው ታስሯል! አሸናፊ ተገኝቷል።`;
+                document.getElementById('game-status-text').style.color = '#ef4444';
+
+                // 🔔 ፖፕ-አፑን (Modal) መረጃ ሞልቶ ማሳየት
+                document.getElementById('pop-card-number').innerText = `CARD #${cardNum}`;
+                document.getElementById('pop-winning-ball').innerHTML = `የዘጋበት ቁጥር፦ <span style="font-size:32px; font-weight:900; color:#ef4444; background:#0b1322; padding:2px 10px; border-radius:5px;">${finalWinningBall}</span>`;
+                document.getElementById('pop-derash-prize').innerText = `የሽልማት መጠን፦ ${document.getElementById('derash-amount').innerText}`;
+                
+                // ፖፕ አፑን ክፈት
+                document.getElementById('winner-popup').classList.add('show');
+                playTextToSpeech(`Good Bingo! Card number ${cardNum} has won!`);
+            } else {
+                resultDiv.innerText = `❌ ካርቴላው አልዘጋም ታስሯል ጨዋታው ይቀጥላል!`;
+                resultDiv.style.backgroundColor = '#4c0519'; resultDiv.style.color = '#f43f5e';
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('winner-popup').classList.remove('show');
+        }
+
+        function resetGame() {
+            if(confirm("አዲስ ጨዋታ ለመጀመር እርግጠኛ ነዎት?")) {
+                stopAutoPlay();
+                closePopup();
+                drawnNumbers = [];
+                registeredCards.clear();
+                document.getElementById('current-ball').innerText = "-";
+                document.getElementById('game-status-text').innerText = "🎮 ዝግጁ (Ready)";
+                document.getElementById('game-status-text').style.color = "#f59e0b";
+                document.getElementById('check-card-num').value = "";
+                document.getElementById('validation-result').style.display = 'none';
+                document.getElementById('photo-card-preview').style.display = 'none';
+                document.getElementById('game-pattern-select').disabled = false;
+                setupApp();
+            }
+        }
+    </script>
+</body>
+</html>
